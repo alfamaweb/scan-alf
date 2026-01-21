@@ -1,0 +1,30 @@
+{
+  "page": {
+    "url": "https://uniaoconstrucoes.com.br/",
+    "status": 200,
+    "title": "Construtora União - Imóveis na Planta e Prontos para Morar na construtora em Aracaju",
+    "meta_description": "Construindo uma vida juntos",
+    "links_total": 88,
+    "images_missing_alt": 9,
+    "domain": "uniaoconstrucoes.com.br"
+  },
+  "findings": [
+    {
+      "id": "title_too_long",
+      "severity": "LOW",
+      "message": "Title possivelmente longo demais (84 chars)."
+    },
+    {
+      "id": "images_missing_alt",
+      "severity": "MED",
+      "message": "9 imagens sem alt (acessibilidade e contexto)."
+    }
+  ],
+  "scores": {
+    "overall": 86,
+    "SEO": 96,
+    "A11Y": 90,
+    "CONTENT": 100
+  },
+  "summary": "RESUMO:\n- O site da Construtora União está funcionando corretamente (status 200).\n- O título da página é possivelmente longo demais (84 caracteres).\n- Existem 9 imagens sem alternativa de texto (alt), o que pode afetar a acessibilidade e o contexto da página.\n- O site tem uma boa pontuação geral (86/100), com destaque para a qualidade do conteúdo (100/100) e a acessibilidade (90/100).\n\nTOP 3 AÇÕES:\n1) **Adicione alternativas de texto (alt) às 9 imagens sem elas**, para melhorar a acessibilidade e o contexto da página.\n2) **Ajuste o título da página para que ele seja mais conciso**, pois está possivelmente longo demais (84 caracteres).\n3) **Verifique se existem outras áreas do site que precisam de melhorias**, considerando a boa pontuação geral (86/100) e a necessidade de manter a qualidade do conteúdo e a acessibilidade.\n\nNOTA:\n- A pontuação geral do site é de 86/100, com destaque para a qualidade do conteúdo (100/100) e a acessibilidade (90/100)."
+}
