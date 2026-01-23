@@ -2,45 +2,41 @@ from __future__ import annotations
 
 import asyncio
 import json
+import sys
 from pathlib import Path
 
-from rich import print
+from app.engine.analyzer import analyze
+from app.engine.report import build_pdf_report
 
-from app.fetcher import PlaywrightFetcher
-from app.extractor import extract_basic
-from app.checks import run_basic_checks
-from app.scoring import compute_scores
-from app.llm_groq import generate_summary
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 
-async def analyze_one(url: str, out_path: str = "outputs/mvp3_result.json") -> None:
-    fetcher = PlaywrightFetcher()
-    status, html = await fetcher.fetch_html(url)
-    page = extract_basic(url, status, html)
+async def run_cli(
+    url: str,
+    mode: str = "site",
+    max_pages: int = 500,
+    max_depth: int = 5,
+    out_json: str = "outputs/alf-scan-result.json",
+):
+    result = await analyze(url=url, mode=mode, max_pages=max_pages, max_depth=max_depth)
 
-    findings = run_basic_checks(page)
-    scores = compute_scores(findings)
-
-    result = {
-        "page": page,
-        "findings": findings,
-        "scores": scores,
-    }
-
-    # LLM summary (Groq)
-    summary = generate_summary(result)
-    result["summary"] = summary
-
-    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w", encoding="utf-8") as f:
+    Path(out_json).parent.mkdir(parents=True, exist_ok=True)
+    with open(out_json, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
-    print("[green]ALF Scan MVP3 OK[/green]")
-    print(f"Saved: {out_path}")
-    print(f"Findings: {len(findings)}")
-    print(f"Overall score: {scores['overall']}")
-    print("\n[bold]Summary:[/bold]\n" + summary)
+    pdf_path = Path(out_json).with_suffix(".pdf")
+    build_pdf_report(result, str(pdf_path))
+
+    print(result.get("report", ""))
 
 
 if __name__ == "__main__":
-    asyncio.run(analyze_one("https://uniaoconstrucoes.com.br/"))
+    asyncio.run(
+        run_cli(
+            "https://uniaoconstrucoes.com.br/",
+            mode="site",
+            max_pages=500,
+            max_depth=5,
+        )
+    )
