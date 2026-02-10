@@ -1,8 +1,4 @@
 fastapi
 uvicorn
-playwright
+httpx
 beautifulsoup4
-lxml
-pydantic
-reportlab
-pytest
