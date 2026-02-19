@@ -46,6 +46,10 @@ _SUMMARY_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
 _AUDIT_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
 
 
+class LLMUnavailableError(RuntimeError):
+    pass
+
+
 def validate_url(raw_url: str) -> str:
     value = (raw_url or "").strip()
     if not value:
@@ -1366,12 +1370,17 @@ def _rules_based_sentence(section_key: str, section: dict[str, Any]) -> str:
     return _single_sentence(base, fallback)
 
 
-def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str] | None:
-    api_key = os.getenv("LLM_API_KEY")
+def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str]:
+    api_key = (os.getenv("LLM_API_KEY") or "").strip()
     if not api_key:
-        return None
+        raise LLMUnavailableError("LLM_API_KEY is missing")
 
-    model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+    is_groq_key = api_key.startswith("gsk_")
+    default_model = "llama-3.1-8b-instant" if is_groq_key else "gpt-4o-mini"
+    model = (os.getenv("LLM_MODEL") or default_model).strip() or default_model
+
+    base_url = "https://api.groq.com/openai/v1" if is_groq_key else "https://api.openai.com/v1"
+    completions_url = f"{base_url}/chat/completions"
     payload = {}
     for key in SECTION_KEYS:
         section = sections.get(key, {})
@@ -1400,7 +1409,7 @@ def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str
     try:
         with httpx.Client(timeout=30) as client:
             response = client.post(
-                "https://api.openai.com/v1/chat/completions",
+                completions_url,
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
@@ -1416,19 +1425,25 @@ def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str
                 },
             )
             response.raise_for_status()
-            raw = response.json()["choices"][0]["message"]["content"]
-            parsed = json.loads(raw)
-    except Exception:
-        return None
+    except httpx.HTTPStatusError as exc:
+        raise LLMUnavailableError(f"LLM request returned status {exc.response.status_code}") from exc
+    except httpx.HTTPError as exc:
+        raise LLMUnavailableError("LLM request failed") from exc
+
+    try:
+        raw = response.json()["choices"][0]["message"]["content"]
+        parsed = json.loads(raw)
+    except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        raise LLMUnavailableError("LLM response parsing failed") from exc
 
     if not isinstance(parsed, dict):
-        return None
+        raise LLMUnavailableError("LLM response format is invalid")
 
     summary: dict[str, str] = {}
     for key in SECTION_KEYS:
         value = parsed.get(key)
         if not isinstance(value, str):
-            return None
+            raise LLMUnavailableError(f"LLM response is missing key: {key}")
         fallback = "O proximo passo e aplicar melhorias objetivas nesta frente para elevar resultado comercial"
         summary[key] = _single_sentence(value, fallback)
     return summary
@@ -1454,15 +1469,8 @@ def run_executive_summary(url: str) -> dict[str, str]:
     sections = detailed["sections"]
 
     llm_summary = _llm_executive_summary(sections)
-    if llm_summary is not None:
-        _SUMMARY_CACHE[normalized] = (now, llm_summary)
-        return llm_summary
-
-    rules_summary: dict[str, str] = {}
-    for key in SECTION_KEYS:
-        rules_summary[key] = _rules_based_sentence(key, sections.get(key, {}))
-    _SUMMARY_CACHE[normalized] = (now, rules_summary)
-    return rules_summary
+    _SUMMARY_CACHE[normalized] = (now, llm_summary)
+    return llm_summary
 
 
 def _status_pt(status: str) -> str:
