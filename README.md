@@ -1,6 +1,6 @@
 # Scan Alf API
 
-API simples de auditoria com **entrada unica**:
+Pipeline de auditoria técnica de sites (crawling + extração + classificação + scoring + relatório JSON), com opção de sumário executivo via LLM e cache pra reduzir custo/latência.:
 
 ```json
 {
