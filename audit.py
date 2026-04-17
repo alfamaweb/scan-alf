@@ -356,11 +356,24 @@ def _crawl_site(
     fetch_errors: list[dict[str, Any]] = []
     limit_notes: list[str] = []
     origin = start_url
+    ssl_error_detected = False
+
+    # try with SSL verification first; fall back to verify=False if cert fails
+    verify_ssl: bool | str = True
+    try:
+        with httpx.Client(follow_redirects=True, headers={"User-Agent": USER_AGENT}, timeout=per_page_timeout_seconds) as _probe:
+            _probe.get(start_url, timeout=per_page_timeout_seconds)
+    except httpx.ConnectError:
+        verify_ssl = False
+        ssl_error_detected = True
+    except Exception:
+        pass
 
     with httpx.Client(
         follow_redirects=True,
         headers={"User-Agent": USER_AGENT},
         timeout=per_page_timeout_seconds,
+        verify=verify_ssl,
     ) as client:
         robots_info = _fetch_robots_and_sitemap(client, start_url, per_page_timeout_seconds)
         robot_parser: RobotFileParser | None = robots_info["robot_parser"]
@@ -479,6 +492,7 @@ def _crawl_site(
         "robots": robots_info,
         "limit_notes": limit_notes,
         "runtime_seconds": round(time.monotonic() - started_at, 2),
+        "ssl_error_detected": ssl_error_detected,
     }
 
 
@@ -580,6 +594,7 @@ def _build_sections(
     broken_links = crawl["broken_internal_links"]
     robots = crawl["robots"]
     limit_notes = crawl["limit_notes"]
+    ssl_error_detected = crawl.get("ssl_error_detected", False)
 
     title_missing = _count_by_predicate(pages, lambda p: not p["title"])
     title_len_bad = _count_by_predicate(
@@ -999,6 +1014,20 @@ def _build_sections(
                 "Migrar todos os recursos para HTTPS.",
                 [_make_evidence(mixed_content_pages[0]["url"], metric=mixed_content_pages[0]["mixed_content_count"])],
                 _top_urls(mixed_content_pages),
+            )
+        )
+
+    if ssl_error_detected:
+        critical_findings.append(
+            _make_finding(
+                "critical_ssl_error",
+                "critical",
+                "Certificado SSL invalido ou nao verificavel",
+                "O certificado HTTPS do site nao passou na verificacao de autenticidade.",
+                "Navegadores podem exibir aviso de seguranca, prejudicando confianc a e conversao.",
+                "Renovar ou substituir o certificado SSL por um emitido por autoridade reconhecida.",
+                [_make_evidence(crawl["url"])],
+                [crawl["url"]],
             )
         )
 
