@@ -1,6 +1,6 @@
 # Scan Alf API
 
-API simples de auditoria com **entrada unica**:
+Pipeline de auditoria técnica de sites (crawling + extração + classificação + scoring + relatório JSON), com opção de sumário executivo via LLM e cache pra reduzir custo/latência.:
 
 ```json
 {
@@ -37,3 +37,11 @@ No `.env`, configure principalmente:
 ```bash
 python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+## 🌐 API publicada
+
+**Base URL:**
+
+👉 https://analise-site.alfamaweb.com.br/
+
+---
