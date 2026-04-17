@@ -1406,46 +1406,52 @@ def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str
         "risk or opportunity; do not mention the phrase analise completa."
     )
 
-    try:
-        with httpx.Client(timeout=30) as client:
-            response = client.post(
-                completions_url,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "temperature": 0,
-                    "response_format": {"type": "json_object"},
-                    "messages": [
-                        {"role": "system", "content": prompt},
-                        {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-                    ],
-                },
-            )
-            response.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        raise LLMUnavailableError(f"LLM request returned status {exc.response.status_code}") from exc
-    except httpx.HTTPError as exc:
-        raise LLMUnavailableError("LLM request failed") from exc
+    request_body = {
+        "model": model,
+        "temperature": 0,
+        "response_format": {"type": "json_object"},
+        "messages": [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ],
+    }
 
-    try:
-        raw = response.json()["choices"][0]["message"]["content"]
-        parsed = json.loads(raw)
-    except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
-        raise LLMUnavailableError("LLM response parsing failed") from exc
-
-    if not isinstance(parsed, dict):
-        raise LLMUnavailableError("LLM response format is invalid")
+    parsed: dict | None = None
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            with httpx.Client(timeout=30) as client:
+                response = client.post(
+                    completions_url,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=request_body,
+                )
+                response.raise_for_status()
+            raw = response.json()["choices"][0]["message"]["content"]
+            candidate = json.loads(raw)
+            if isinstance(candidate, dict) and all(
+                isinstance(candidate.get(k), str) for k in SECTION_KEYS
+            ):
+                parsed = candidate
+                break
+        except httpx.HTTPStatusError as exc:
+            raise LLMUnavailableError(f"LLM request returned status {exc.response.status_code}") from exc
+        except httpx.HTTPError as exc:
+            raise LLMUnavailableError("LLM request failed") from exc
+        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+            last_exc = exc
 
     summary: dict[str, str] = {}
     for key in SECTION_KEYS:
-        value = parsed.get(key)
-        if not isinstance(value, str):
-            raise LLMUnavailableError(f"LLM response is missing key: {key}")
-        fallback = "O proximo passo e aplicar melhorias objetivas nesta frente para elevar resultado comercial"
-        summary[key] = _single_sentence(value, fallback)
+        fallback = _rules_based_sentence(key, sections.get(key, {}))
+        value = (parsed or {}).get(key)
+        if not isinstance(value, str) or not value.strip():
+            summary[key] = fallback
+        else:
+            summary[key] = _single_sentence(value, fallback)
     return summary
 
 
