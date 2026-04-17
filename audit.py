@@ -38,7 +38,6 @@ SECTION_KEYS = [
     "a11y",
     "content",
     "performance",
-    "indexacao",
     "erros_criticos",
 ]
 
@@ -325,6 +324,13 @@ def _fetch_robots_and_sitemap(
         except Exception:
             sitemap_present = False
 
+    crawl_blocked = False
+    if parser is not None:
+        crawl_blocked = (
+            not parser.can_fetch("*", start_url)
+            or not parser.can_fetch("Googlebot", start_url)
+        )
+
     return {
         "robots_url": robots_url,
         "robots_present": robots_present,
@@ -332,6 +338,7 @@ def _fetch_robots_and_sitemap(
         "sitemap_url": sitemap_url,
         "sitemap_present": sitemap_present,
         "robot_parser": parser,
+        "crawl_blocked": crawl_blocked,
     }
 
 
@@ -595,6 +602,8 @@ def _build_sections(
     robots = crawl["robots"]
     limit_notes = crawl["limit_notes"]
     ssl_error_detected = crawl.get("ssl_error_detected", False)
+    crawl_blocked = bool(robots.get("crawl_blocked", False))
+    homepage_noindex = bool(pages and "noindex" in str(pages[0].get("robots_meta") or "").lower())
 
     title_missing = _count_by_predicate(pages, lambda p: not p["title"])
     title_len_bad = _count_by_predicate(
@@ -611,10 +620,6 @@ def _build_sections(
 
     noindex_pages = _count_by_predicate(
         pages, lambda p: "noindex" in str(p["robots_meta"] or "").lower()
-    )
-    canonical_conflicts = _count_by_predicate(
-        pages,
-        lambda p: bool(p["canonical"]) and not _same_origin(str(p["canonical"]), crawl["url"]),
     )
 
     missing_lang = _count_by_predicate(pages, lambda p: not p["lang"])
@@ -918,59 +923,24 @@ def _build_sections(
             )
         )
 
-    if not robots["robots_present"]:
-        indexacao_findings.append(
-            _make_finding(
-                "indexacao_robots_missing",
-                "high",
-                "robots.txt ausente",
-                "Arquivo robots.txt nao encontrado com status 200.",
-                "Bots podem rastrear caminhos sem orientacao.",
-                "Publicar robots.txt com regras claras de rastreamento.",
-                [_make_evidence(robots["robots_url"], metric=robots["robots_status"])],
-                [robots["robots_url"]],
-            )
-        )
+    site_indexado = not crawl_blocked and not homepage_noindex
 
-    if not robots["sitemap_present"]:
+    if not site_indexado:
+        motivo = []
+        if crawl_blocked:
+            motivo.append("robots.txt bloqueando rastreamento (Disallow: /)")
+        if homepage_noindex:
+            motivo.append("homepage com meta robots noindex")
         indexacao_findings.append(
             _make_finding(
-                "indexacao_sitemap_missing",
-                "medium",
-                "Sitemap nao encontrado",
-                "Sitemap nao encontrado em robots.txt nem em /sitemap.xml.",
-                "Pode dificultar descoberta de URLs relevantes.",
-                "Gerar sitemap.xml atualizado e referenciar no robots.txt.",
-                [_make_evidence(robots["sitemap_url"])],
-                [robots["sitemap_url"]],
-            )
-        )
-
-    if noindex_pages:
-        indexacao_findings.append(
-            _make_finding(
-                "indexacao_noindex_pages",
-                "medium",
-                "Paginas com noindex",
-                f"{len(noindex_pages)} paginas HTML com meta robots noindex.",
-                "Pode remover paginas da indexacao organica.",
-                "Revisar noindex e manter apenas em paginas que realmente devem ficar fora do indice.",
-                [_make_evidence(noindex_pages[0]["url"], selector='meta[name="robots"]')],
-                _top_urls(noindex_pages),
-            )
-        )
-
-    if canonical_conflicts:
-        indexacao_findings.append(
-            _make_finding(
-                "indexacao_canonical_conflict",
-                "high",
-                "Canonical apontando para outra origem",
-                f"{len(canonical_conflicts)} paginas com canonical em dominio diferente.",
-                "Pode transferir sinais de relevancia para outro host.",
-                "Ajustar canonical para URL canonica correta do mesmo site.",
-                [_make_evidence(canonical_conflicts[0]["url"], value=canonical_conflicts[0]["canonical"])],
-                _top_urls(canonical_conflicts),
+                "indexacao_nao_indexado",
+                "critical",
+                "Site nao indexado",
+                f"O site nao esta sendo indexado: {', '.join(motivo)}.",
+                "O site nao aparece nos resultados de busca organica.",
+                "Corrigir as restricoes de indexacao identificadas.",
+                [_make_evidence(crawl["url"])],
+                [crawl["url"]],
             )
         )
 
@@ -1155,11 +1125,6 @@ def _build_sections(
             "numero de recursos referenciados",
             "recursos potencialmente bloqueantes de renderizacao",
         ],
-        "indexacao": [
-            "robots.txt e sitemap.xml",
-            "paginas noindex",
-            "conflitos de canonical",
-        ],
         "erros_criticos": [
             "status 4xx/5xx",
             "redirect chains",
@@ -1174,6 +1139,7 @@ def _build_sections(
         "broken_internal_links_count": len(broken_links),
         "http_4xx_5xx_pages_count": len(http_error_pages),
         "noindex_pages_count": len(noindex_pages),
+        "site_indexado": not crawl_blocked and not homepage_noindex,
         "missing_meta_description_count": len(meta_missing),
         "missing_title_count": len(title_missing),
         "missing_lang_count": len(missing_lang),
@@ -1185,6 +1151,7 @@ def _build_sections(
         "sitemap_present": bool(robots["sitemap_present"]),
         "links_checked_internal": int(crawl["links_checked"]),
         "partial_crawl": bool(limit_notes),
+        "indexado": not crawl_blocked and not homepage_noindex,
     }
 
     worst_pages: list[dict[str, Any]] = []
@@ -1362,7 +1329,6 @@ def _fallback_focus(section_key: str) -> str:
         "a11y": "experiencia de navegacao e confianca da marca",
         "content": "clareza da proposta e capacidade de conversao",
         "performance": "fluidez da jornada e tempo de resposta percebido",
-        "indexacao": "presenca organica e cobertura de paginas",
         "erros_criticos": "riscos tecnicos com impacto direto em resultados",
     }
     return mapping.get(section_key, "performance digital")
@@ -1429,7 +1395,7 @@ def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str
 
     prompt = (
         "Write one executive sentence per section in Brazilian Portuguese. "
-        "Return JSON with exactly these keys: overall, seo, a11y, content, performance, indexacao, erros_criticos. "
+        "Return JSON with exactly these keys: overall, seo, a11y, content, performance, erros_criticos. "
         "Rules: one sentence only per key; no URLs; no numeric metrics; no bullet/list formatting; "
         "be actionable and grounded only on provided findings; use a consultative commercial tone that highlights "
         "risk or opportunity; do not mention the phrase analise completa."
@@ -1446,8 +1412,7 @@ def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str
     }
 
     parsed: dict | None = None
-    last_exc: Exception | None = None
-    for attempt in range(3):
+    for _ in range(3):
         try:
             with httpx.Client(timeout=30) as client:
                 response = client.post(
@@ -1470,8 +1435,8 @@ def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str
             raise LLMUnavailableError(f"LLM request returned status {exc.response.status_code}") from exc
         except httpx.HTTPError as exc:
             raise LLMUnavailableError("LLM request failed") from exc
-        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
-            last_exc = exc
+        except (KeyError, IndexError, TypeError, json.JSONDecodeError):
+            pass
 
     summary: dict[str, str] = {}
     for key in SECTION_KEYS:
@@ -1504,6 +1469,7 @@ def run_executive_summary(url: str) -> dict[str, Any]:
     sections = detailed["sections"]
 
     llm_summary = _llm_executive_summary(sections)
+    appendix = detailed.get("appendix") or {}
 
     result: dict[str, Any] = {}
     for key in SECTION_KEYS:
@@ -1516,6 +1482,8 @@ def run_executive_summary(url: str) -> dict[str, Any]:
         if key == "erros_criticos":
             entry["total"] = len(sec.get("findings") or [])
         result[_categoria_pt(key)] = entry
+
+    result["indexacao"] = {"indexado": bool(appendix.get("site_indexado", True))}
 
     _SUMMARY_CACHE[normalized] = (now, result)
     return result
@@ -1585,7 +1553,7 @@ def run_report_json(url: str) -> dict[str, Any]:
     overall = secoes_raw["overall"]
 
     pontuacoes = {}
-    for key in ["seo", "a11y", "content", "performance", "indexacao", "erros_criticos"]:
+    for key in ["seo", "a11y", "content", "performance", "erros_criticos"]:
         sec = secoes_raw[key]
         pontuacoes[_categoria_pt(key)] = {
             "score": int(sec.get("score", 0)),
@@ -1595,6 +1563,12 @@ def run_report_json(url: str) -> dict[str, Any]:
     secoes = []
     for key in ["seo", "a11y", "content", "performance", "indexacao", "erros_criticos"]:
         sec = secoes_raw[key]
+        if key == "indexacao":
+            secoes.append({
+                "categoria": "indexacao",
+                "indexado": bool((detailed.get("appendix") or {}).get("site_indexado", True)),
+            })
+            continue
         secoes.append(
             {
                 "categoria": _categoria_pt(key),
@@ -1640,6 +1614,7 @@ def run_report_json(url: str) -> dict[str, Any]:
         "sitemap_encontrado": appendix.get("sitemap_present"),
         "links_internos_verificados": appendix.get("links_checked_internal"),
         "crawl_parcial": appendix.get("partial_crawl"),
+        "indexado": appendix.get("indexado"),
     }
 
     return {
