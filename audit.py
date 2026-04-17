@@ -1455,7 +1455,7 @@ def _llm_executive_summary(sections: dict[str, dict[str, Any]]) -> dict[str, str
     return summary
 
 
-def run_executive_summary(url: str) -> dict[str, str]:
+def run_executive_summary(url: str) -> dict[str, Any]:
     normalized = validate_url(url)
     now = time.time()
     cached = _SUMMARY_CACHE.get(normalized)
@@ -1475,8 +1475,21 @@ def run_executive_summary(url: str) -> dict[str, str]:
     sections = detailed["sections"]
 
     llm_summary = _llm_executive_summary(sections)
-    _SUMMARY_CACHE[normalized] = (now, llm_summary)
-    return llm_summary
+
+    result: dict[str, Any] = {}
+    for key in SECTION_KEYS:
+        sec = sections.get(key, {})
+        entry: dict[str, Any] = {
+            "score": int(sec.get("score", 0)),
+            "status": _status_pt(str(sec.get("status", "attention"))),
+            "resumo": llm_summary.get(key, ""),
+        }
+        if key == "erros_criticos":
+            entry["total"] = len(sec.get("findings") or [])
+        result[_categoria_pt(key)] = entry
+
+    _SUMMARY_CACHE[normalized] = (now, result)
+    return result
 
 
 def _status_pt(status: str) -> str:

@@ -51,7 +51,7 @@ def report(
 def analyze_summary(
     request: AuditRequest,
     x_api_token: str | None = Header(default=None, alias="X-API-Token"),
-) -> dict[str, str]:
+) -> dict:
     _validate_api_token(x_api_token)
     try:
         normalized_url = validate_url(request.url)
