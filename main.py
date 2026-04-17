@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import os
 
+try:
+    from dotenv import load_dotenv; load_dotenv()
+except ImportError:
+    pass
+
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 

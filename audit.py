@@ -147,10 +147,13 @@ def _get_canonical(soup: BeautifulSoup, page_url: str) -> str:
 
 
 def _get_robots_meta(soup: BeautifulSoup) -> str:
-    tag = soup.find("meta", attrs={"name": re.compile(r"^robots$", re.I)})
-    if not tag:
-        return ""
-    return str(tag.get("content") or "").strip().lower()
+    directives: set[str] = set()
+    for name in ("robots", "googlebot"):
+        tag = soup.find("meta", attrs={"name": re.compile(rf"^{name}$", re.I)})
+        if tag:
+            content = str(tag.get("content") or "").strip().lower()
+            directives.update(d.strip() for d in content.split(",") if d.strip())
+    return ", ".join(sorted(directives))
 
 
 def _count_inputs_without_labels(soup: BeautifulSoup) -> int:
@@ -241,6 +244,10 @@ def _parse_html_page(url: str, status: int, response: httpx.Response, origin: st
     meta_description = _get_meta_description(soup)
     canonical = _get_canonical(soup, page["final_url"])
     robots_meta = _get_robots_meta(soup)
+    x_robots = str(response.headers.get("x-robots-tag", "")).strip().lower()
+    if x_robots:
+        directives = set(robots_meta.split(", ")) | {d.strip() for d in x_robots.split(",") if d.strip()}
+        robots_meta = ", ".join(sorted(d for d in directives if d))
     h1_count = len(soup.find_all("h1"))
 
     html_tag = soup.find("html")
