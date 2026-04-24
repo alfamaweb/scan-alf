@@ -580,7 +580,7 @@ def _build_section(summary: str, findings: list[dict[str, Any]]) -> dict[str, An
             break
 
     if not next_actions:
-        next_actions = ["Manter monitoramento recorrente e validar regressao semanal."]
+        next_actions = ["Manter monitoramento recorrente e validar regressão semanal."]
 
     return {
         "score": score,
@@ -657,10 +657,10 @@ def _build_sections(
             _make_finding(
                 "seo_title_missing",
                 "high",
-                "Paginas sem title",
-                f"{len(title_missing)} paginas HTML sem tag <title>.",
-                "Prejudica relevancia organica e CTR.",
-                "Definir um title unico e descritivo por pagina.",
+                "Páginas sem title",
+                f"{len(title_missing)} páginas HTML sem tag <title>.",
+                "Prejudica relevância orgânica e CTR.",
+                "Definir um title único e descritivo por página.",
                 [
                     _make_evidence(
                         title_missing[0]["url"],
@@ -679,7 +679,7 @@ def _build_sections(
                 "seo_title_length",
                 "medium",
                 "Titles fora do tamanho recomendado",
-                f"{len(title_len_bad)} paginas com title curto ou longo demais.",
+                f"{len(title_len_bad)} páginas com title curto ou longo demais.",
                 "Pode reduzir clareza do snippet no buscador.",
                 "Manter titles entre 15 e 60 caracteres.",
                 [_make_evidence(title_len_bad[0]["url"], selector="title", metric=len(title_len_bad))],
@@ -693,9 +693,9 @@ def _build_sections(
                 "seo_meta_description_missing",
                 "medium",
                 "Meta description ausente",
-                f"{len(meta_missing)} paginas sem meta description.",
+                f"{len(meta_missing)} páginas sem meta description.",
                 "Diminui controle sobre texto exibido no resultado de busca.",
-                "Adicionar meta description unica e objetiva em cada pagina.",
+                "Adicionar meta description única e objetiva em cada página.",
                 [
                     _make_evidence(
                         meta_missing[0]["url"],
@@ -714,8 +714,8 @@ def _build_sections(
                 "seo_meta_description_length",
                 "low",
                 "Meta descriptions fora do tamanho recomendado",
-                f"{len(meta_len_bad)} paginas com meta description curta ou longa demais.",
-                "Pode afetar compreensao do snippet.",
+                f"{len(meta_len_bad)} páginas com meta description curta ou longa demais.",
+                "Pode afetar compreensão do snippet.",
                 "Ajustar meta descriptions para faixa entre 70 e 160 caracteres.",
                 [_make_evidence(meta_len_bad[0]["url"], selector='meta[name="description"]')],
                 _top_urls(meta_len_bad),
@@ -728,9 +728,9 @@ def _build_sections(
                 "seo_canonical_missing",
                 "medium",
                 "Canonical ausente",
-                f"{len(canonical_missing)} paginas sem link canonical.",
-                "Pode dificultar consolidacao de sinais para URLs similares.",
-                "Adicionar <link rel='canonical'> em paginas indexaveis.",
+                f"{len(canonical_missing)} páginas sem link canonical.",
+                "Pode dificultar consolidação de sinais para URLs similares.",
+                "Adicionar <link rel='canonical'> em páginas indexáveis.",
                 [_make_evidence(canonical_missing[0]["url"], selector="link[rel=canonical]")],
                 _top_urls(canonical_missing),
             )
@@ -742,9 +742,9 @@ def _build_sections(
                 "seo_h1_count",
                 "medium",
                 "Estrutura de H1 inconsistente",
-                f"{len(h1_bad)} paginas com quantidade de H1 diferente de 1.",
-                "Pode reduzir clareza semantica da pagina.",
-                "Garantir exatamente um H1 principal por pagina.",
+                f"{len(h1_bad)} páginas com quantidade de H1 diferente de 1.",
+                "Pode reduzir clareza semântica da página.",
+                "Garantir exatamente um H1 principal por página.",
                 [_make_evidence(h1_bad[0]["url"], selector="h1", metric=len(h1_bad))],
                 _top_urls(h1_bad),
             )
@@ -758,7 +758,7 @@ def _build_sections(
                 severity,
                 "Links internos quebrados",
                 f"{len(broken_links)} links internos retornando erro (4xx/5xx/timeout).",
-                "Impacta rastreabilidade, UX e distribuicao de autoridade interna.",
+                "Impacta rastreabilidade, UX e distribuição de autoridade interna.",
                 "Corrigir URLs quebradas e atualizar links de navegacao.",
                 [
                     _make_evidence(
@@ -778,7 +778,7 @@ def _build_sections(
                 "a11y_img_alt_missing",
                 severity,
                 "Imagens sem texto alternativo",
-                f"{total_missing_alt} imagens sem alt em {len(missing_alt_pages)} paginas.",
+                f"{total_missing_alt} imagens sem alt em {len(missing_alt_pages)} páginas.",
                 "Prejudica acessibilidade para leitores de tela.",
                 "Definir atributo alt descritivo em todas as imagens relevantes.",
                 [
@@ -798,9 +798,9 @@ def _build_sections(
             _make_finding(
                 "a11y_input_label_missing",
                 "high",
-                "Campos de formulario sem label",
+                "Campos de formulário sem label",
                 f"{total_missing_label} inputs sem label associada.",
-                "Dificulta navegacao com tecnologia assistiva.",
+                "Dificulta navegação com tecnologia assistiva.",
                 "Associar labels via for/id ou usar aria-label/aria-labelledby.",
                 [
                     _make_evidence(
@@ -819,7 +819,7 @@ def _build_sections(
                 "a11y_lang_missing",
                 "medium",
                 "Atributo lang ausente",
-                f"{len(missing_lang)} paginas sem atributo lang na tag html.",
+                f"{len(missing_lang)} páginas sem atributo lang na tag html.",
                 "Pode reduzir compatibilidade com leitores de tela.",
                 "Definir lang apropriado no elemento <html>.",
                 [_make_evidence(missing_lang[0]["url"], selector="html[lang]")],
@@ -832,10 +832,10 @@ def _build_sections(
             _make_finding(
                 "a11y_title_missing",
                 "medium",
-                "Titulo da pagina ausente",
-                f"{len(title_missing)} paginas sem titulo de documento.",
-                "Compromete contexto de navegacao para usuarios assistivos.",
-                "Adicionar tag <title> descritiva em todas as paginas.",
+                "Título da página ausente",
+                f"{len(title_missing)} páginas sem título de documento.",
+                "Compromete contexto de navegação para usuários assistivos.",
+                "Adicionar tag <title> descritiva em todas as páginas.",
                 [_make_evidence(title_missing[0]["url"], selector="title")],
                 _top_urls(title_missing),
             )
@@ -847,8 +847,8 @@ def _build_sections(
                 "content_thin_pages",
                 "medium",
                 "Conteudo muito curto",
-                f"{len(thin_content)} paginas com menos de 120 palavras.",
-                "Pode reduzir capacidade de ranqueamento e conversao.",
+                f"{len(thin_content)} páginas com menos de 120 palavras.",
+                "Pode reduzir capacidade de ranqueamento e conversão.",
                 "Expandir conteudo util com contexto, prova e CTA claros.",
                 [_make_evidence(thin_content[0]["url"], metric=thin_content[0]["word_count"])],
                 _top_urls(thin_content),
@@ -861,9 +861,9 @@ def _build_sections(
                 "content_missing_h1",
                 "medium",
                 "Estrutura sem heading principal",
-                f"{len(low_heading_structure)} paginas sem H1.",
-                "Reduz clareza da proposta principal para usuarios e buscadores.",
-                "Incluir heading principal alinhado com o objetivo da pagina.",
+                f"{len(low_heading_structure)} páginas sem H1.",
+                "Reduz clareza da proposta principal para usuários e buscadores.",
+                "Incluir heading principal alinhado com o objetivo da página.",
                 [_make_evidence(low_heading_structure[0]["url"], selector="h1")],
                 _top_urls(low_heading_structure),
             )
@@ -875,9 +875,9 @@ def _build_sections(
                 "perf_slow_ttfb",
                 "high",
                 "TTFB elevado",
-                f"{len(slow_pages)} paginas com TTFB acima de 1200ms.",
+                f"{len(slow_pages)} páginas com TTFB acima de 1200ms.",
                 "Aumenta tempo de carregamento percebido.",
-                "Revisar backend, cache e latencia de servidor.",
+                "Revisar backend, cache e latência de servidor.",
                 [_make_evidence(slow_pages[0]["url"], metric=slow_pages[0]["ttfb_ms"])],
                 _top_urls(slow_pages),
             )
@@ -889,7 +889,7 @@ def _build_sections(
                 "perf_heavy_html",
                 "medium",
                 "HTML muito pesado",
-                f"{len(heavy_html)} paginas com HTML acima de 500KB.",
+                f"{len(heavy_html)} páginas com HTML acima de 500KB.",
                 "Pode aumentar tempo de download e parse.",
                 "Reduzir markup redundante e componentes inline excessivos.",
                 [_make_evidence(heavy_html[0]["url"], metric=heavy_html[0]["html_size_bytes"])],
@@ -902,9 +902,9 @@ def _build_sections(
             _make_finding(
                 "perf_many_requests",
                 "medium",
-                "Muitos recursos na pagina",
-                f"{len(high_request_pages)} paginas com mais de 80 recursos referenciados.",
-                "Aumenta custo de renderizacao e transferencias.",
+                "Muitos recursos na página",
+                f"{len(high_request_pages)} páginas com mais de 80 recursos referenciados.",
+                "Aumenta custo de renderização e transferências.",
                 "Consolidar e otimizar scripts, CSS e imagens.",
                 [_make_evidence(high_request_pages[0]["url"], metric=high_request_pages[0]["resource_count"])],
                 _top_urls(high_request_pages),
@@ -916,10 +916,10 @@ def _build_sections(
             _make_finding(
                 "perf_render_blocking",
                 "medium",
-                "Recursos bloqueando renderizacao",
-                f"{len(render_blocking)} paginas com mais de 5 recursos bloqueantes no head.",
-                "Pode atrasar exibicao de conteudo acima da dobra.",
-                "Aplicar defer/async em scripts e otimizar CSS critico.",
+                "Recursos bloqueando renderização",
+                f"{len(render_blocking)} páginas com mais de 5 recursos bloqueantes no head.",
+                "Pode atrasar exibição de conteúdo acima da dobra.",
+                "Aplicar defer/async em scripts e otimizar CSS crítico.",
                 [
                     _make_evidence(
                         render_blocking[0]["url"],
@@ -942,10 +942,10 @@ def _build_sections(
             _make_finding(
                 "indexacao_nao_indexado",
                 "critical",
-                "Site nao indexado",
-                f"O site nao esta sendo indexado: {', '.join(motivo)}.",
-                "O site nao aparece nos resultados de busca organica.",
-                "Corrigir as restricoes de indexacao identificadas.",
+                "Site não indexado",
+                f"O site não está sendo indexado: {', '.join(motivo)}.",
+                "O site não aparece nos resultados de busca orgânica.",
+                "Corrigir as restrições de indexação identificadas.",
                 [_make_evidence(crawl["url"])],
                 [crawl["url"]],
             )
@@ -957,9 +957,9 @@ def _build_sections(
             _make_finding(
                 "critical_http_errors",
                 sev,
-                "Paginas com erro HTTP",
-                f"{len(http_error_pages)} paginas HTML com status 4xx/5xx ou timeout.",
-                "Interrompe jornada do usuario e rastreio.",
+                "Páginas com erro HTTP",
+                f"{len(http_error_pages)} páginas HTML com status 4xx/5xx ou timeout.",
+                "Interrompe jornada do usuário e rastreio.",
                 "Corrigir rotas quebradas e falhas de servidor prioritariamente.",
                 [_make_evidence(http_error_pages[0]["url"], metric=http_error_pages[0]["status"])],
                 _top_urls(http_error_pages),
@@ -972,9 +972,9 @@ def _build_sections(
                 "critical_redirect_chains",
                 "high",
                 "Cadeias de redirecionamento longas",
-                f"{len(redirect_chain_pages)} paginas com cadeia de 3+ redirecionamentos.",
-                "Aumenta latencia e pode causar perda de sinal SEO.",
-                "Reduzir para no maximo um redirecionamento por URL.",
+                f"{len(redirect_chain_pages)} páginas com cadeia de 3+ redirecionamentos.",
+                "Aumenta latência e pode causar perda de sinal SEO.",
+                "Reduzir para no máximo um redirecionamento por URL.",
                 [_make_evidence(redirect_chain_pages[0]["url"], metric=redirect_chain_pages[0]["redirect_hops"])],
                 _top_urls(redirect_chain_pages),
             )
@@ -985,9 +985,9 @@ def _build_sections(
             _make_finding(
                 "critical_mixed_content",
                 "high",
-                "Mixed content em paginas HTTPS",
-                f"{len(mixed_content_pages)} paginas carregando recursos HTTP em contexto HTTPS.",
-                "Pode causar bloqueio de recursos e alertas de seguranca.",
+                "Mixed content em páginas HTTPS",
+                f"{len(mixed_content_pages)} páginas carregando recursos HTTP em contexto HTTPS.",
+                "Pode causar bloqueio de recursos e alertas de segurança.",
                 "Migrar todos os recursos para HTTPS.",
                 [_make_evidence(mixed_content_pages[0]["url"], metric=mixed_content_pages[0]["mixed_content_count"])],
                 _top_urls(mixed_content_pages),
@@ -999,9 +999,9 @@ def _build_sections(
             _make_finding(
                 "critical_ssl_error",
                 "critical",
-                "Certificado SSL invalido ou nao verificavel",
-                "O certificado HTTPS do site nao passou na verificacao de autenticidade.",
-                "Navegadores podem exibir aviso de seguranca, prejudicando confianc a e conversao.",
+                "Certificado SSL inválido ou não verificável",
+                "O certificado HTTPS do site não passou na verificação de autenticidade.",
+                "Navegadores podem exibir aviso de segurança, prejudicando confiança e conversão.",
                 "Renovar ou substituir o certificado SSL por um emitido por autoridade reconhecida.",
                 [_make_evidence(crawl["url"])],
                 [crawl["url"]],
@@ -1013,7 +1013,7 @@ def _build_sections(
         partial_finding = _make_finding(
             "critical_partial_crawl",
             "critical",
-            "Crawl parcial por limite de seguranca",
+            "Crawl parcial por limite de segurança",
             f"A varredura foi interrompida antes de cobrir todo o site: {note_text}",
             "Resultados representam amostra parcial do site.",
             "Reexecutar auditoria apos reduzir complexidade de rastreamento ou revisar arquitetura.",
@@ -1023,34 +1023,34 @@ def _build_sections(
         critical_findings.append(partial_finding)
 
     seo_summary = (
-        f"{len(seo_findings)} achados SEO em {len(pages)} paginas HTML analisadas."
+        f"{len(seo_findings)} achados SEO em {len(pages)} páginas HTML analisadas."
         if pages
-        else "Nenhuma pagina HTML analisada para SEO."
+        else "Nenhuma página HTML analisada para SEO."
     )
     a11y_summary = (
-        f"{len(a11y_findings)} achados de acessibilidade em verificacoes basicas."
+        f"{len(a11y_findings)} achados de acessibilidade em verificações básicas."
         if pages
-        else "Nenhuma pagina HTML analisada para acessibilidade."
+        else "Nenhuma página HTML analisada para acessibilidade."
     )
     content_summary = (
-        f"{len(content_findings)} achados de conteudo com foco em cobertura e estrutura."
+        f"{len(content_findings)} achados de conteúdo com foco em cobertura e estrutura."
         if pages
-        else "Nenhuma pagina HTML analisada para conteudo."
+        else "Nenhuma página HTML analisada para conteúdo."
     )
     performance_summary = (
         f"{len(performance_findings)} achados de performance por proxies leves (TTFB, tamanho HTML e recursos)."
         if pages
-        else "Nenhuma pagina HTML analisada para performance."
+        else "Nenhuma página HTML analisada para performance."
     )
     indexacao_summary = (
-        f"{len(indexacao_findings)} achados de indexacao com base em robots, sitemap, noindex e canonical."
+        f"{len(indexacao_findings)} achados de indexação com base em robots, sitemap, noindex e canonical."
         if pages
-        else "Nenhuma pagina HTML analisada para indexacao."
+        else "Nenhuma página HTML analisada para indexação."
     )
     critical_summary = (
-        f"{len(critical_findings)} achados criticos relacionados a erro HTTP, redirect chain, mixed content e limites."
+        f"{len(critical_findings)} achados críticos relacionados a erro HTTP, redirect chain, mixed content e limites."
         if pages or critical_findings
-        else "Nenhum erro critico identificado."
+        else "Nenhum erro crítico identificado."
     )
 
     seo_section = _build_section(seo_summary, seo_findings)
@@ -1069,9 +1069,9 @@ def _build_sections(
         + critical_section["findings"]
     )
     overall_summary = (
-        f"Crawl em {len(pages)} paginas HTML; {len(all_findings)} achados relevantes."
+        f"Crawl em {len(pages)} páginas HTML; {len(all_findings)} achados relevantes."
         if pages
-        else "Nenhuma pagina HTML rastreada. Verifique disponibilidade e robots."
+        else "Nenhuma página HTML rastreada. Verifique disponibilidade e robots."
     )
     overall_section = _build_section(overall_summary, all_findings)
     if pages:
@@ -1107,8 +1107,8 @@ def _build_sections(
     for key, measured in {
         "overall": [
             "Cobertura do crawl HTML",
-            "Consolidacao de achados por severidade",
-            "Status geral por score medio das categorias",
+            "Consolidação de achados por severidade",
+            "Status geral por score médio das categorias",
         ],
         "seo": [
             "title e meta description",
@@ -1120,17 +1120,17 @@ def _build_sections(
             "img sem alt",
             "input sem label",
             "lang na tag html",
-            "presenca de title de documento",
+            "presença de title de documento",
         ],
         "content": [
-            "palavras por pagina",
-            "presenca de heading principal",
+            "palavras por página",
+            "presença de heading principal",
         ],
         "performance": [
             "TTFB aproximado",
             "tamanho do HTML",
             "numero de recursos referenciados",
-            "recursos potencialmente bloqueantes de renderizacao",
+            "recursos potencialmente bloqueantes de renderização",
         ],
         "erros_criticos": [
             "status 4xx/5xx",
@@ -1299,10 +1299,10 @@ def _strip_urls_and_metrics(text: str) -> str:
 def _traduzir_termos_pt(text: str) -> str:
     cleaned = str(text or "")
     trocas = {
-        "mixed content": "conteudo misto",
-        "render blocking": "bloqueio de renderizacao",
-        "title": "titulo",
-        "heading": "cabecalho",
+        "mixed content": "conteúdo misto",
+        "render blocking": "bloqueio de renderização",
+        "title": "título",
+        "heading": "cabeçalho",
     }
     for origem, destino in trocas.items():
         cleaned = re.sub(re.escape(origem), destino, cleaned, flags=re.IGNORECASE)
@@ -1332,11 +1332,11 @@ def _single_sentence(text: str, fallback: str) -> str:
 def _fallback_focus(section_key: str) -> str:
     mapping = {
         "overall": "desempenho digital e potencial de crescimento",
-        "seo": "visibilidade organica e geracao de demanda",
-        "a11y": "experiencia de navegacao e confianca da marca",
-        "content": "clareza da proposta e capacidade de conversao",
+        "seo": "visibilidade orgânica e geração de demanda",
+        "a11y": "experiência de navegação e confiança da marca",
+        "content": "clareza da proposta e capacidade de conversão",
         "performance": "fluidez da jornada e tempo de resposta percebido",
-        "erros_criticos": "riscos tecnicos com impacto direto em resultados",
+        "erros_criticos": "riscos técnicos com impacto direto em resultados",
     }
     return mapping.get(section_key, "performance digital")
 
@@ -1353,22 +1353,22 @@ def _rules_based_sentence(section_key: str, section: dict[str, Any]) -> str:
 
     if not findings:
         base = (
-            f"Nesta leitura inicial, {focus} aparece estavel e o proximo passo e refinar essa frente para ampliar resultados com previsibilidade"
+            f"Nesta leitura inicial, {focus} aparece estável e o próximo passo é refinar essa frente para ampliar resultados com previsibilidade"
         )
     elif status == "critical":
         base = (
-            f"Foram identificados riscos relevantes em {focus} e o proximo passo e priorizar correcoes de maior impacto para proteger conversao e receita"
+            f"Foram identificados riscos relevantes em {focus} e o próximo passo é priorizar correções de maior impacto para proteger conversão e receita"
         )
     elif status == "attention":
         base = (
-            f"Ha oportunidades claras em {focus} e o proximo passo e executar melhorias priorizadas para transformar potencial em ganho comercial"
+            f"Há oportunidades claras em {focus} e o próximo passo é executar melhorias priorizadas para transformar potencial em ganho comercial"
         )
     else:
         base = (
-            f"Existem oportunidades pontuais em {focus} e o proximo passo e capturar ganhos adicionais com ajustes de alto retorno"
+            f"Existem oportunidades pontuais em {focus} e o próximo passo é capturar ganhos adicionais com ajustes de alto retorno"
         )
 
-    fallback = "O proximo passo e aplicar melhorias objetivas nesta frente para elevar resultado comercial"
+    fallback = "O próximo passo é aplicar melhorias objetivas nesta frente para elevar resultado comercial"
     return _single_sentence(base, fallback)
 
 
@@ -1498,11 +1498,11 @@ def run_executive_summary(url: str) -> dict[str, Any]:
 
 def _status_pt(status: str) -> str:
     mapping = {
-        "ok": "ok",
-        "attention": "atencao",
-        "critical": "critico",
+        "ok": "ótimo",
+        "attention": "atenção",
+        "critical": "crítico",
     }
-    return mapping.get(str(status).lower(), "atencao")
+    return mapping.get(str(status).lower(), "atenção")
 
 
 def _categoria_pt(chave: str) -> str:
