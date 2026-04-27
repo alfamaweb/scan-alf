@@ -1498,11 +1498,11 @@ def run_executive_summary(url: str) -> dict[str, Any]:
 
 def _status_pt(status: str) -> str:
     mapping = {
-        "ok": "ótimo",
-        "attention": "atenção",
-        "critical": "crítico",
+        "ok": "Ótimo",
+        "attention": "Atenção",
+        "critical": "Crítico",
     }
-    return mapping.get(str(status).lower(), "atenção")
+    return mapping.get(str(status).lower(), "Atenção")
 
 
 def _categoria_pt(chave: str) -> str:
